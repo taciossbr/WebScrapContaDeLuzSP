@@ -1,11 +1,15 @@
 import re
+from time import sleep
 from collections import namedtuple
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 
-conta = namedtuple("Conta", "status dt_pag mes_ref, venc, valor")
+conta = namedtuple("Conta", "status dt_pag mes_ref venc valor")
 
 
 class EnelPage:
@@ -22,23 +26,36 @@ class EnelPage:
             lambda x: x.find_element_by_id("anlage"))
         inst_input.send_keys(num_instalacao)
         inst_input.submit()
-        btnLogin = self.driver.find_element_by_id("btnLogin")
+        wait = WebDriverWait(self.driver, 10)
+        btnLogin = wait.until(EC.element_to_be_clickable((By.ID,"btnLogin")))
+        # btnLogin = self.driver.find_element_by_id("btnLogin")
+        sleep(1)
         btnLogin.click()
         btnEntrar = WebDriverWait(self.driver, 10).until(
             lambda x: x.find_element_by_css_selector(
                 ".md-button.md-lightDefault-theme.flex"))
         btnEntrar.click()
 
-    def _navigate_contas(self):
-        btns = self.driver.find_elements_by_css_selector(".md-button.md-ink-ripple")
-        minha_conta_btn = btns[1]
+    def navigate_contas(self):
+        wait = WebDriverWait(self.driver, 20)
+        btns = wait.until(EC.element_to_be_clickable((By.NAME, 'Minha Conta')))
+            # lambda x: x.find_elements_by_tag_name("button"))
+
+        minha_conta_btn = btns
+        # actions = ActionChains(self.driver)
+        # actions.move_to_element(minha_conta_btn)
+        # self.driver.execute_script("arguments[0].scrollIntoView();", minha_conta_btn)
+        # WebDriverWait(minha_conta_btn, 5).until(
+        #     lambda x: x.click())
         minha_conta_btn.click()
         contas_pagamentos = WebDriverWait(self.driver, 10).until(
             lambda x: x.find_element_by_id("contas-e-pagamentos"))
         contas_pagamentos.click()
     def get_todas_contas(self):
 #        self._navigate_contas()
-        label_todas = self.driver.find_elements_by_tag_name("label")[-3]
+        wait = WebDriverWait(self.driver, 20)
+        label_todas = wait.until(EC.element_to_be_clickable((By.ID, 'radio_13')))
+        # label_todas = self.driver.find_element_by_id("radio_13")
         label_todas.click()
         boxes = self.driver.find_elements_by_class_name("faturas-card")
         contas = []
